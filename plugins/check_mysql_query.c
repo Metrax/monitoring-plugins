@@ -3,7 +3,7 @@
 * Monitoring check_mysql_query plugin
 * 
 * License: GPL
-* Copyright (c) 2006-2009 Monitoring Plugins Development Team
+* Copyright (c) 2006-2015 Monitoring Plugins Development Team
 * Original code from check_mysql, copyright 1999 Didi Rieder
 * 
 * Description:
@@ -30,7 +30,7 @@
 *****************************************************************************/
 
 const char *progname = "check_mysql_query";
-const char *copyright = "1999-2007";
+const char *copyright = "1999-2015";
 const char *email = "devel@monitoring-plugins.org";
 
 #include "common.h"
@@ -56,6 +56,7 @@ void print_help (void);
 void print_usage (void);
 
 char *sql_query = NULL;
+char *sql_alias = NULL;
 int verbose = 0;
 thresholds *my_thresholds = NULL;
 
@@ -160,6 +161,9 @@ main (int argc, char **argv)
 	} else if (status == STATE_CRITICAL) {
 		printf("QUERY %s: ", _("CRITICAL"));
 	}
+    if(!sql_alias) {
+        sql_alias = sql_query;
+    }
 	printf(_("'%s' returned %f | %s"), sql_query, value,
 		fperfdata("result", value, "",
 		my_thresholds->warning?TRUE:FALSE, my_thresholds->warning?my_thresholds->warning->end:0,
@@ -257,6 +261,9 @@ process_arguments (int argc, char **argv)
 		case 'q':
 			xasprintf(&sql_query, "%s", optarg);
 			break;
+        case 'q':
+			xasprintf(&sql_alias, "%s", optarg);
+			break;
 		case 'w':
 			warning = optarg;
 			break;
@@ -315,6 +322,8 @@ print_help (void)
 	printf (UT_EXTRA_OPTS);
 	printf (" -q, --query=STRING\n");
 	printf ("    %s\n", _("SQL query to run. Only first column in first row will be read"));
+    printf (" -a, --alias=STRING\n");
+	printf ("    %s\n", _("Shows an text instead of mysql query in output"));
 	printf (UT_WARN_CRIT_RANGE);
 	printf (UT_HOST_PORT, 'P', myport);
 	printf (" %s\n", "-s, --socket=STRING");
@@ -349,6 +358,6 @@ void
 print_usage (void)
 {
   printf ("%s\n", _("Usage:"));
-  printf (" %s -q SQL_query [-w warn] [-c crit] [-H host] [-P port] [-s socket]\n",progname);
+  printf (" %s -q SQL_query [-a alias] [-w warn] [-c crit] [-H host] [-P port] [-s socket]\n",progname);
   printf ("       [-d database] [-u user] [-p password] [-f optfile] [-g group]\n");
 }
